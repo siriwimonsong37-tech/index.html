@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VetClinic - ระบบบริหารคลินิกสัตวแพทย์และการรักษาสัตว์เลี้ยง</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Prompt / Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        },
+                        sidebar: '#0f172a',
+                    },
+                    fontFamily: {
+                        sans: ['Prompt', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .modal-backdrop { background-color: rgba(15, 23, 42, 0.55); backdrop-filter: blur(2px); }
+    </style>
+</head>
+<body class="bg-slate-50 flex h-screen overflow-hidden text-slate-800">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 z-20 shadow-xl">
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-emerald-900/40">
+                    <i class="fa-solid fa-paw"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white text-lg leading-tight">VetClinic<span class="text-emerald-400">+</span></h1>
+                    <p class="text-xs text-slate-400">ระบบบริหารคลินิกสัตว์</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-6">
+            <!-- Daily Operations -->
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">งานประจำวัน</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('appointments')" id="nav-appointments" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition">
+                        <i class="fa-regular fa-calendar-check text-emerald-400 w-5"></i>
+                        <span>ปฏิทินนัดหมาย</span>
+                    </button>
+                    <button onclick="switchTab('visits')" id="nav-visits" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition">
+                        <i class="fa-solid fa-stethoscope text-emerald-400 w-5"></i>
+                        <span>คิวเข้ารักษา / ห้องตรวจ</span>
+                    </button>
+                    <button onclick="switchTab('finance')" id="nav-finance" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition">
+                        <i class="fa-solid fa-cash-register text-emerald-400 w-5"></i>
+                        <span>การเงิน / แคชเชียร์</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Master Data -->
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">ข้อมูลหลัก (MASTER)</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('owners')" id="nav-owners" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition">
+                        <i class="fa-solid fa-users text-blue-400 w-5"></i>
+                        <span>เจ้าของสัตว์</span>
+                    </button>
+                    <button onclick="switchTab('pets')" id="nav-pets" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition">
+                        <i class="fa-solid fa-dog text-blue-400 w-5"></i>
+                        <span>สัตว์เลี้ยง</span>
+                    </button>
+                    <button onclick="switchTab('vets')" id="nav-vets" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition">
+                        <i class="fa-solid fa-user-doctor text-blue-400 w-5"></i>
+                        <span>สัตวแพทย์</span>
+                    </button>
+                    <button onclick="switchTab('drugs')" id="nav-drugs" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition">
+                        <i class="fa-solid fa-pills text-blue-400 w-5"></i>
+                        <span>คลังข้อมูลยา</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Ownership -->
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">กรรมสิทธิ์</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('ownership')" id="nav-ownership" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition">
+                        <i class="fa-solid fa-id-card text-amber-400 w-5"></i>
+                        <span>จัดการกรรมสิทธิ์สัตว์</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reports -->
+            <div>
+                <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">ระบบรายงาน</p>
+                <div class="space-y-1">
+                    <button onclick="switchTab('reports')" id="nav-reports" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-800 hover:text-white transition">
+                        <i class="fa-solid fa-chart-line text-purple-400 w-5"></i>
+                        <span>แดชบอร์ดรายงาน</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center font-bold text-white">A</div>
+                <div>
+                    <p class="text-white font-medium">เข้าสู่ระบบโดย Admin</p>
+                    <p class="text-slate-500 text-[10px]">สาขาใหญ่ Thonburi</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-100">
+        <!-- Top App Bar -->
+        <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-6 flex-shrink-0">
+            <div class="flex items-center gap-4">
+                <h2 id="page-title" class="text-xl font-bold text-slate-800">ปฏิทินนัดหมาย (Appointment)</h2>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="current-date-badge" class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-xs font-medium border border-slate-200">
+                    <i class="fa-regular fa-clock mr-1"></i> วันนี้: 21/09/2026
+                </span>
+                <button onclick="openWalkinModal()" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium transition shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span>รับผู้ป่วย / เช็คอิน (Walk-in)</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Body -->
+        <section class="flex-1 overflow-y-auto custom-scrollbar p-6">
+            <!-- Alert / Notification Banner -->
+            <div id="toast-message" class="hidden mb-4 p-4 rounded-xl border shadow-sm flex items-center justify-between transition-all"></div>
+
+            <!-- Tab 1: APPOINTMENTS -->
+            <div id="tab-appointments" class="tab-content space-y-6">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div>
+                            <label class="text-xs text-slate-500 block mb-1">วันที่นัดหมาย</label>
+                            <input type="date" id="appt-filter-date" value="2026-09-21" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-500 block mb-1">สถานะ</label>
+                            <select id="appt-filter-status" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm">
+                                <option value="ALL">-- ทั้งหมด --</option>
+                                <option value="ยืนยันแล้ว">ยืนยันแล้ว</option>
+                                <option value="เสร็จสิ้น">เสร็จสิ้น (เปิด Visit)</option>
+                                <option value="ยกเลิก">ยกเลิก</option>
+                            </select>
+                        </div>
+                        <button onclick="renderAppointments()" class="mt-5 px-4 py-1.5 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-700">กรองข้อมูล</button>
+                    </div>
+                    <button onclick="openModal('modal-add-appointment')" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>สร้างนัดหมายใหม่</span>
+                    </button>
+                </div>
+
+                <div id="appointments-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Dynamic Cards -->
+                </div>
+            </div>
+
+            <!-- Tab 2: VISITS & WORKSPACE -->
+            <div id="tab-visits" class="tab-content space-y-6 hidden">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-pulse text-emerald-600"></i> เคสที่อยู่ระหว่างการตรวจ (Active Visits)
+                    </h3>
+                    <button onclick="openWalkinModal()" class="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-medium hover:bg-rose-700 transition">
+                        <i class="fa-solid fa-door-open mr-1"></i> รับผู้ป่วยใหม่ (Open Visit)
+                    </button>
+                </div>
+
+                <div id="visits-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Active Visit Cards -->
+                </div>
+
+                <!-- CLINICAL WORKSPACE SECTION (Modal or Drawer View) -->
+                <div id="workspace-container" class="hidden bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden mt-6">
+                    <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-xl">
+                                <i class="fa-solid fa-paw"></i>
+                            </div>
+                            <div>
+                                <h4 id="ws-pet-title" class="font-bold text-lg">กะทิ (P-004)</h4>
+                                <p id="ws-pet-subtitle" class="text-xs text-slate-400">แมว | พันธุ์ ไทย (วิเชียรมาศ) | เพศ: เมีย | อายุ 4 ปี 7 เดือน | น้ำหนัก: 3.80 กก.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="ws-visit-code" class="px-3 py-1 bg-slate-800 text-emerald-400 font-mono text-xs rounded-full border border-slate-700">VS-004</span>
+                            <button onclick="closeWorkspace()" class="text-slate-400 hover:text-white text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Clinical Tabs -->
+                    <div class="bg-slate-100 border-b border-slate-200 px-4 flex gap-2">
+                        <button onclick="switchWsTab('diag')" id="wstab-btn-diag" class="ws-tab-btn border-b-2 border-emerald-600 text-emerald-700 font-medium px-4 py-3 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-stethoscope"></i> การวินิจฉัย (Diagnosis)
+                        </button>
+                        <button onclick="switchWsTab('proc')" id="wstab-btn-proc" class="ws-tab-btn border-b-2 border-transparent text-slate-600 hover:text-slate-900 font-medium px-4 py-3 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-syringe"></i> หัตถการ (Procedures)
+                        </button>
+                        <button onclick="switchWsTab('rx')" id="wstab-btn-rx" class="ws-tab-btn border-b-2 border-transparent text-slate-600 hover:text-slate-900 font-medium px-4 py-3 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-capsules"></i> ใบสั่งยา (Prescription)
+                        </button>
+                        <button onclick="switchWsTab('vets')" id="wstab-btn-vets" class="ws-tab-btn border-b-2 border-transparent text-slate-600 hover:text-slate-900 font-medium px-4 py-3 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-user-doctor"></i> สัตวแพทย์ร่วมดูแล (Vets)
+                        </button>
+                    </div>
+
+                    <div class="p-6">
+                        <!-- WS Tab 1: Diagnosis -->
+                        <div id="wstab-diag" class="ws-tab-content space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="md:col-span-1 bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                                    <h5 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="fa-solid fa-plus-circle text-emerald-600"></i> เพิ่มผลวินิจฉัย</h5>
+                                    <div>
+                                        <label class="text-xs text-slate-500 block mb-1">สัตวแพทย์ผู้วินิจฉัย</label>
+                                        <select id="ws-diag-vet" class="w-full border border-slate-300 rounded-lg p-2 text-sm"></select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-slate-500 block mb-1">ผลการวินิจฉัย / ตรวจโรค</label>
+                                        <textarea id="ws-diag-text" rows="4" class="w-full border border-slate-300 rounded-lg p-2 text-sm" placeholder="ระบุรายละเอียดผลวินิจฉัย..."></textarea>
+                                    </div>
+                                    <button onclick="addDiagnosis()" class="w-full py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">บันทึกผลวินิจฉัย</button>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <h5 class="font-bold text-slate-800 text-sm mb-3">รายการวินิจฉัยในรอบนี้</h5>
+                                    <div id="ws-diag-list" class="space-y-2"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WS Tab 2: Procedures -->
+                        <div id="wstab-proc" class="ws-tab-content space-y-4 hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="md:col-span-1 bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                                    <h5 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="fa-solid fa-plus-circle text-emerald-600"></i> เพิ่มรายการหัตถการ</h5>
+                                    <div>
+                                        <label class="text-xs text-slate-500 block mb-1">เลือกประเภทหัตถการ</label>
+                                        <select id="ws-proc-type" onchange="onProcTypeSelect()" class="w-full border border-slate-300 rounded-lg p-2 text-sm"></select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-slate-500 block mb-1">สัตวแพทย์ผู้ดำเนินการ</label>
+                                        <select id="ws-proc-vet" class="w-full border border-slate-300 rounded-lg p-2 text-sm"></select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-slate-500 block mb-1">ราคาที่เรียกเก็บ (บาท)</label>
+                                        <input type="number" id="ws-proc-price" class="w-full border border-slate-300 rounded-lg p-2 text-sm" placeholder="0.00">
+                                    </div>
+                                    <button onclick="addProcedure()" class="w-full py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">บันทึกหัตถการ</button>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <h5 class="font-bold text-slate-800 text-sm mb-3">หัตถการที่ดำเนินการแล้ว</h5>
+                                    <div id="ws-proc-list" class="space-y-2"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WS Tab 3: Prescription -->
+                        <div id="wstab-rx" class="ws-tab-content space-y-4 hidden">
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+                                <div class="flex flex-wrap items-center justify-between gap-3">
+                                    <h5 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="fa-solid fa-pills text-emerald-600"></i> สั่งยา / เพิ่มรายการยา</h5>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs text-slate-500">สัตวแพทย์ผู้สั่ง:</span>
+                                        <select id="ws-rx-vet" class="border border-slate-300 rounded-lg px-2 py-1 text-xs"></select>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
+                                    <div class="lg:col-span-2">
+                                        <label class="text-xs text-slate-500 block mb-1">เลือกยา</label>
+                                        <select id="ws-rx-drug" class="w-full border border-slate-300 rounded-lg p-2 text-sm"></select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-slate-500 block mb-1">จำนวน</label>
+                                        <input type="number" id="ws-rx-qty" value="1" min="1" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-slate-500 block mb-1">ขนาดใช้ (Dose)</label>
+                                        <input type="text" id="ws-rx-dose" placeholder="1 เม็ด" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-slate-500 block mb-1">ความถี่</label>
+                                        <input type="text" id="ws-rx-freq" placeholder="วันละ 2 ครั้ง หลังอาหาร" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+                                    </div>
+                                    <div class="flex items-end">
+                                        <button onclick="addRxItem()" class="w-full py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700"><i class="fa-solid fa-plus mr-1"></i> เพิ่มรายการ</button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h6 class="font-semibold text-xs text-slate-600 mb-2">รายการยาในใบสั่งนี้:</h6>
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-left text-sm border-collapse">
+                                            <thead>
+                                                <tr class="bg-slate-200 text-slate-700 text-xs">
+                                                    <th class="p-2">ชื่อยา</th>
+                                                    <th class="p-2">จำนวนจ่าย</th>
+                                                    <th class="p-2">วิธีรับประทาน / ใช้</th>
+                                                    <th class="p-2 text-right">ราคาต่อหน่วย</th>
+                                                    <th class="p-2 text-right">รวม</th>
+                                                    <th class="p-2 text-center">จัดการ</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="ws-rx-items-body"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WS Tab 4: Vets Care Team -->
+                        <div id="wstab-vets" class="ws-tab-content space-y-4 hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="md:col-span-1 bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                                    <h5 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-user-plus text-emerald-600 mr-1"></i> มอบหมายสัตวแพทย์เพิ่ม</h5>
+                                    <div>
+                                        <label class="text-xs text-slate-500 block mb-1">สัตวแพทย์</label>
+                                        <select id="ws-add-vet-select" class="w-full border border-slate-300 rounded-lg p-2 text-sm"></select>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-slate-500 block mb-1">หน้าที่/บทบาท</label>
+                                        <input type="text" id="ws-add-vet-role" placeholder="หมอผู้ช่วย / ผู้ช่วยผ่าตัด" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+                                    </div>
+                                    <button onclick="addVetToVisit()" class="w-full py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">บันทึกเพิ่มในทีม</button>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <h5 class="font-bold text-slate-800 text-sm mb-3">ทีมสัตวแพทย์ในเคสนี้</h5>
+                                    <div id="ws-vets-list" class="space-y-2"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Controls -->
+                        <div class="mt-6 pt-4 border-t border-slate-200 flex justify-between items-center">
+                            <button onclick="closeWorkspace()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 text-sm font-medium">ปิดหน้าต่าง</button>
+                            <button onclick="finishVisitAndSendToCashier()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow-md flex items-center gap-2">
+                                <i class="fa-solid fa-check-double"></i>
+                                <span>ปิดการรักษา & ส่งไปห้องการเงิน</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: FINANCE & CASHIER -->
+            <div id="tab-finance" class="tab-content space-y-6 hidden">
+                <!-- Cases pending bill creation -->
+                <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl">
+                    <h4 class="font-bold text-amber-900 text-sm mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-clock text-amber-600"></i> เคสที่ตรวจเสร็จแล้ว (รอออกใบแจ้งหนี้/ออกบิล)
+                    </h4>
+                    <div id="completed-visits-pending-invoice" class="flex flex-wrap gap-3">
+                        <!-- Dynamic Pending Badges -->
+                    </div>
+                </div>
+
+                <!-- Invoice List Table -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+                        <h4 class="font-bold text-slate-800 text-base">รายการใบแจ้งหนี้ (Invoices)</h4>
+                        <input type="text" id="invoice-search" onkeyup="renderInvoices()" placeholder="ค้นหาเลขอ้างอิง / ชื่อเจ้าของ..." class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm w-64">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-medium">
+                                <tr>
+                                    <th class="p-3">เลขที่ใบแจ้งหนี้</th>
+                                    <th class="p-3">วันที่</th>
+                                    <th class="p-3">เคส / สัตว์เลี้ยง</th>
+                                    <th class="p-3">ผู้รับผิดชอบชำระ</th>
+                                    <th class="p-3 text-right">ยอดรวม (฿)</th>
+                                    <th class="p-3 text-right">คงเหลือ (฿)</th>
+                                    <th class="p-3 text-center">สถานะ</th>
+                                    <th class="p-3 text-center">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoices-table-body" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Payment Details & Invoice Viewer Section -->
+                <div id="invoice-detail-view" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-lg space-y-6">
+                    <div class="flex justify-between items-start border-b border-slate-200 pb-4">
+                        <div>
+                            <span class="text-xs text-emerald-600 font-bold uppercase tracking-wider">รายละเอียดใบแจ้งหนี้</span>
+                            <h3 id="inv-detail-id" class="text-2xl font-bold text-slate-900">INV-004</h3>
+                            <p id="inv-detail-sub" class="text-sm text-slate-500">วันที่: 22/08/2026 | ผู้ชำระ: คุณวณิชยา สุมเสนจ</p>
+                        </div>
+                        <button onclick="closeInvoiceDetail()" class="text-slate-400 hover:text-slate-700 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <!-- Items breakdown -->
+                    <div>
+                        <h5 class="font-bold text-slate-800 text-sm mb-3">รายการค่าใช้จ่าย (Expense Items)</h5>
+                        <div class="border rounded-xl overflow-hidden">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-slate-100 text-slate-700 font-medium">
+                                    <tr>
+                                        <th class="p-2.5">ที่มา</th>
+                                        <th class="p-2.5">รายการ</th>
+                                        <th class="p-2.5 text-right">ราคาต่อหน่วย</th>
+                                        <th class="p-2.5 text-right">จำนวน</th>
+                                        <th class="p-2.5 text-right">รวมเงิน (บาท)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inv-items-body" class="divide-y divide-slate-100"></tbody>
+                                <tfoot class="bg-slate-50 font-bold">
+                                    <tr>
+                                        <td colspan="4" class="p-3 text-right">ยอดรวมสุทธิ:</td>
+                                        <td id="inv-total-amount" class="p-3 text-right text-emerald-700 font-mono text-base">0.00 ฿</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Payment History & Record Payment Form -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                        <!-- History -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                            <h5 class="font-bold text-slate-800 text-sm flex items-center justify-between">
+                                <span><i class="fa-solid fa-history text-blue-600 mr-1"></i> ประวัติการชำระเงิน</span>
+                                <span id="inv-balance-due" class="text-xs text-rose-600 font-bold">ยอดคงเหลือ: 0.00 ฿</span>
+                            </h5>
+                            <div id="payment-history-list" class="space-y-2 text-xs"></div>
+                        </div>
+
+                        <!-- Form -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                            <h5 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-credit-card text-emerald-600 mr-1"></i> บันทึกรับชำระเงิน (Payment)</h5>
+                            <div>
+                                <label class="text-xs text-slate-500 block mb-1">ยอดเงินที่ชำระ (บาท)</label>
+                                <input type="number" id="pay-amount-input" class="w-full border border-slate-300 rounded-lg p-2 text-sm" placeholder="0.00">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs text-slate-500 block mb-1">ช่องทางชำระ</label>
+                                    <select id="pay-method-select" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+                                        <option value="เงินสด (Cash)">เงินสด (Cash)</option>
+                                        <option value="โอนเงิน/PromptPay">โอนเงิน/PromptPay</option>
+                                        <option value="บัตรเครดิต">บัตรเครดิต</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-slate-500 block mb-1">เลขอ้างอิง / สลิป</label>
+                                    <input type="text" id="pay-ref-input" placeholder="Ref No." class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+                                </div>
+                            </div>
+                            <button onclick="submitPayment()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow-sm">บันทึกรับเงิน</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: OWNERS -->
+            <div id="tab-owners" class="tab-content space-y-4 hidden">
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200">
+                    <input type="text" id="owner-search" onkeyup="renderOwners()" placeholder="ค้นหา รหัส, ชื่อ, เบอร์โทร..." class="border border-slate-300 rounded-lg px-3 py-2 text-sm w-72">
+                    <button onclick="openModal('modal-add-owner')" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>เพิ่มเจ้าของใหม่</span>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                            <tr>
+                                <th class="p-3">รหัส</th>
+                                <th class="p-3">ชื่อ-นามสกุล</th>
+                                <th class="p-3">เบอร์โทรติดต่อ</th>
+                                <th class="p-3">ที่อยู่</th>
+                                <th class="p-3 text-center">จำนวนสัตว์</th>
+                                <th class="p-3 text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="owners-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 5: PETS -->
+            <div id="tab-pets" class="tab-content space-y-4 hidden">
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200">
+                    <input type="text" id="pet-search" onkeyup="renderPets()" placeholder="ค้นหา รหัส, ชื่อสัตว์, ชนิด..." class="border border-slate-300 rounded-lg px-3 py-2 text-sm w-72">
+                    <button onclick="openModal('modal-add-pet')" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>ขึ้นทะเบียนสัตว์ใหม่</span>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                            <tr>
+                                <th class="p-3">รหัส</th>
+                                <th class="p-3">ชื่อสัตว์เลี้ยง</th>
+                                <th class="p-3">ชนิด / พันธุ์</th>
+                                <th class="p-3">เพศ</th>
+                                <th class="p-3">วันเกิด / อายุ</th>
+                                <th class="p-3">เจ้าของหลักปัจจุบัน</th>
+                                <th class="p-3 text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pets-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 6: VETERINARIANS -->
+            <div id="tab-vets" class="tab-content space-y-4 hidden">
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200">
+                    <input type="text" id="vet-search" onkeyup="renderVets()" placeholder="ค้นหา สัตวแพทย์..." class="border border-slate-300 rounded-lg px-3 py-2 text-sm w-72">
+                    <button onclick="openModal('modal-add-vet')" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>เพิ่มสัตวแพทย์</span>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                            <tr>
+                                <th class="p-3">รหัส</th>
+                                <th class="p-3">ชื่อ-นามสกุล</th>
+                                <th class="p-3">เลขประกอบวิชาชีพ</th>
+                                <th class="p-3">เบอร์โทรติดต่อ</th>
+                                <th class="p-3 text-center">เคสดูแลวันนี้</th>
+                                <th class="p-3 text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vets-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 7: PHARMACY / DRUGS -->
+            <div id="tab-drugs" class="tab-content space-y-4 hidden">
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200">
+                    <input type="text" id="drug-search" onkeyup="renderDrugs()" placeholder="ค้นหา รหัสยา, ชื่อยา..." class="border border-slate-300 rounded-lg px-3 py-2 text-sm w-72">
+                    <button onclick="openModal('modal-add-drug')" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>ขึ้นทะเบียนยาใหม่</span>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                            <tr>
+                                <th class="p-3">รหัส</th>
+                                <th class="p-3">ชื่อยา</th>
+                                <th class="p-3">รูปแบบยา</th>
+                                <th class="p-3">หน่วยจ่าย</th>
+                                <th class="p-3 text-right">ราคาต่อหน่วย (฿)</th>
+                                <th class="p-3 text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drugs-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab 8: OWNERSHIP MANAGEMENT -->
+            <div id="tab-ownership" class="tab-content space-y-6 hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Left: Select Pet -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                        <h4 class="font-bold text-slate-800 text-sm border-b pb-2">เลือกสัตว์เลี้ยงเพื่อจัดการกรรมสิทธิ์</h4>
+                        <div class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar" id="ownership-pet-list"></div>
+                    </div>
+
+                    <!-- Right: History & Actions -->
+                    <div class="md:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6" id="ownership-detail-panel">
+                        <div class="flex justify-between items-center border-b pb-4">
+                            <div>
+                                <h3 id="own-pet-name" class="text-xl font-bold text-slate-900">กรุณาเลือกสัตว์เลี้ยง</h3>
+                                <p id="own-pet-info" class="text-xs text-slate-500">-</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="openModal('modal-add-co-owner')" class="px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-lg hover:bg-slate-700"><i class="fa-solid fa-user-plus mr-1"></i> เพิ่มเจ้าของร่วม</button>
+                                <button onclick="openModal('modal-transfer-owner')" class="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700"><i class="fa-solid fa-arrow-right-arrow-left mr-1"></i> โอนกรรมสิทธิ์</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-clock-rotate-left text-amber-500 mr-1"></i> ประวัติกรรมสิทธิ์ (Ownership History)</h4>
+                            <div class="border rounded-xl overflow-hidden">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                                        <tr>
+                                            <th class="p-3">ชื่อเจ้าของ</th>
+                                            <th class="p-3">สถานะ</th>
+                                            <th class="p-3">ระยะเวลา</th>
+                                            <th class="p-3 text-center">จัดการ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ownership-history-body" class="divide-y divide-slate-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 9: DASHBOARD / REPORTS -->
+            <div id="tab-reports" class="tab-content space-y-6 hidden">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-500 mb-1">การนัดหมายวันนี้</p>
+                            <h3 id="stat-appt-count" class="text-2xl font-bold text-slate-900">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-calendar-day"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-500 mb-1">เคสเข้ารักษา (Visits)</p>
+                            <h3 id="stat-visit-count" class="text-2xl font-bold text-slate-900">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-stethoscope"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-500 mb-1">สัตว์เลี้ยงในระบบ</p>
+                            <h3 id="stat-pet-count" class="text-2xl font-bold text-slate-900">0</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-dog"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-slate-500 mb-1">รายได้วันนี้ (บาท)</p>
+                            <h3 id="stat-revenue" class="text-2xl font-bold text-emerald-600">0.00 ฿</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-coins"></i></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h4 class="font-bold text-slate-800 text-sm mb-4">สรุปประเภทการรักษา/หัตถการยอดนิยม</h4>
+                        <div class="space-y-3" id="report-procedures-summary"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h4 class="font-bold text-slate-800 text-sm mb-4">สัตวแพทย์ที่ออกปฏิบัติงานประจำวัน</h4>
+                        <div class="space-y-3" id="report-vets-summary"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL: ADD OWNER -->
+    <div id="modal-add-owner" class="hidden fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-900 text-lg">เพิ่มเจ้าของใหม่</h3>
+                <button onclick="closeModal('modal-add-owner')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">ชื่อ-นามสกุล *</label>
+                    <input type="text" id="form-owner-name" class="w-full border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">เบอร์โทรศัพท์ *</label>
+                    <input type="text" id="form-owner-phone" placeholder="เช่น 081-234-5678" class="w-full border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">ที่อยู่ติดต่อ</label>
+                    <textarea id="form-owner-address" rows="3" class="w-full border border-slate-300 rounded-lg p-2.5"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeModal('modal-add-owner')" class="px-4 py-2 border rounded-lg text-slate-600 text-sm">ยกเลิก</button>
+                <button onclick="saveOwner()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD PET -->
+    <div id="modal-add-pet" class="hidden fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-900 text-lg">ขึ้นทะเบียนสัตว์ใหม่</h3>
+                <button onclick="closeModal('modal-add-pet')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">ชื่อสัตว์เลี้ยง *</label>
+                    <input type="text" id="form-pet-name" class="w-full border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">ชนิดสัตว์ *</label>
+                        <select id="form-pet-species" class="w-full border border-slate-300 rounded-lg p-2.5">
+                            <option value="สุนัข">สุนัข</option>
+                            <option value="แมว">แมว</option>
+                            <option value="นก">นก</option>
+                            <option value="หนู">หนู</option>
+                            <option value="กระต่าย">กระต่าย</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">สายพันธุ์ *</label>
+                        <input type="text" id="form-pet-breed" placeholder="เช่น ชิหัวหวั้ว, ไทย" class="w-full border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">เพศ *</label>
+                        <select id="form-pet-sex" class="w-full border border-slate-300 rounded-lg p-2.5">
+                            <option value="ผู้">ผู้</option>
+                            <option value="เมีย">เมีย</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">วันเกิดโดยประมาณ</label>
+                        <input type="date" id="form-pet-birth" class="w-full border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">เจ้าของหลัก *</label>
+                    <select id="form-pet-owner" class="w-full border border-slate-300 rounded-lg p-2.5"></select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeModal('modal-add-pet')" class="px-4 py-2 border rounded-lg text-slate-600 text-sm">ยกเลิก</button>
+                <button onclick="savePet()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD APPOINTMENT -->
+    <div id="modal-add-appointment" class="hidden fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-900 text-lg">บันทึกนัดหมายใหม่</h3>
+                <button onclick="closeModal('modal-add-appointment')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">สัตว์เลี้ยง *</label>
+                    <select id="form-appt-pet" onchange="onApptPetChange()" class="w-full border border-slate-300 rounded-lg p-2.5"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">ผู้ติดต่อ / เจ้าของ *</label>
+                    <select id="form-appt-owner" class="w-full border border-slate-300 rounded-lg p-2.5"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">สัตวแพทย์ผู้ตรวจ *</label>
+                    <select id="form-appt-vet" class="w-full border border-slate-300 rounded-lg p-2.5"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">วันที่นัด *</label>
+                        <input type="date" id="form-appt-date" value="2026-09-21" class="w-full border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">เวลา *</label>
+                        <input type="time" id="form-appt-time" value="10:00" class="w-full border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">อาการ / เหตุผลที่นัด *</label>
+                    <textarea id="form-appt-reason" rows="2" class="w-full border border-slate-300 rounded-lg p-2.5" placeholder="ระบุการนัดหมายล่วงหน้า..."></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeModal('modal-add-appointment')" class="px-4 py-2 border rounded-lg text-slate-600 text-sm">ยกเลิก</button>
+                <button onclick="saveAppointment()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">บันทึกนัดหมาย</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: WALK-IN / OPEN VISIT -->
+    <div id="modal-walkin" class="hidden fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-rose-700 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-door-open"></i> เปิดเวชระเบียน / รับเข้าตรวจ (Open Visit)
+                </h3>
+                <button onclick="closeModal('modal-walkin')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">ดึงข้อมูลจากการนัดหมายวันนี้ (ตัวเลือก)</label>
+                    <select id="form-walkin-appt" onchange="onWalkinApptSelect()" class="w-full border border-slate-300 rounded-lg p-2.5">
+                        <option value="">-- เคส Walk-in (ไม่มีนัด) --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">สัตว์เลี้ยง *</label>
+                    <select id="form-walkin-pet" onchange="onWalkinPetSelect()" class="w-full border border-slate-300 rounded-lg p-2.5"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">ใครเป็นคนพามารักษา? (ผู้นำส่ง) *</label>
+                    <select id="form-walkin-owner" class="w-full border border-slate-300 rounded-lg p-2.5"></select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">ชั่งน้ำหนัก (กก.) *</label>
+                        <input type="number" step="0.1" id="form-walkin-weight" placeholder="เช่น 3.5" class="w-full border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">แพทย์เจ้าของไข้ *</label>
+                        <select id="form-walkin-vet" class="w-full border border-slate-300 rounded-lg p-2.5"></select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">ซักประวัติ / อาการเบื้องต้น *</label>
+                    <textarea id="form-walkin-symptoms" rows="3" class="w-full border border-slate-300 rounded-lg p-2.5" placeholder="เช่น ซึม อ้วก 2 วัน..."></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeModal('modal-walkin')" class="px-4 py-2 border rounded-lg text-slate-600 text-sm">ยกเลิก</button>
+                <button onclick="saveVisit()" class="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-medium hover:bg-rose-700">รับเข้าห้องตรวจ (เปิด Visit)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD VET -->
+    <div id="modal-add-vet" class="hidden fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-900 text-lg">เพิ่มสัตวแพทย์ใหม่</h3>
+                <button onclick="closeModal('modal-add-vet')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">ชื่อ-นามสกุล (พร้อมคำนำหน้า) *</label>
+                    <input type="text" id="form-vet-name" placeholder="เช่น น.สพ. สมชาย ใจดี" class="w-full border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">เลขใบประกอบวิชาชีพ *</label>
+                    <input type="text" id="form-vet-license" placeholder="เช่น VET-1009" class="w-full border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">เบอร์โทรศัพท์ *</label>
+                    <input type="text" id="form-vet-phone" placeholder="081-000-0000" class="w-full border border-slate-300 rounded-lg p-2.5">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeModal('modal-add-vet')" class="px-4 py-2 border rounded-lg text-slate-600 text-sm">ยกเลิก</button>
+                <button onclick="saveVet()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD DRUG -->
+    <div id="modal-add-drug" class="hidden fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-900 text-lg">ขึ้นทะเบียนยาใหม่</h3>
+                <button onclick="closeModal('modal-add-drug')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">ชื่อยา *</label>
+                    <input type="text" id="form-drug-name" placeholder="เช่น Amoxicillin 250mg" class="w-full border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">รูปแบบยา *</label>
+                    <input type="text" id="form-drug-form" placeholder="เช่น เม็ด, แคปซูล, ยาฉีด" class="w-full border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">หน่วยจ่าย *</label>
+                        <input type="text" id="form-drug-unit" placeholder="เช่น เม็ด, ขวด" class="w-full border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">ราคาปัจจุบัน (บาท) *</label>
+                        <input type="number" id="form-drug-price" placeholder="0.00" class="w-full border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeModal('modal-add-drug')" class="px-4 py-2 border rounded-lg text-slate-600 text-sm">ยกเลิก</button>
+                <button onclick="saveDrug()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">บันทึกยา</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD CO-OWNER -->
+    <div id="modal-add-co-owner" class="hidden fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-900 text-lg">เพิ่มเจ้าของร่วม</h3>
+                <button onclick="closeModal('modal-add-co-owner')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">เลือกบุคคล *</label>
+                    <select id="form-coowner-select" class="w-full border border-slate-300 rounded-lg p-2.5"></select>
+                </div>
+                <div class="flex items-center gap-2 pt-2">
+                    <input type="checkbox" id="form-coowner-isprimary" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+                    <label for="form-coowner-isprimary" class="text-xs text-slate-700">ตั้งเป็น "ผู้ติดต่อหลัก" ทันที</label>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeModal('modal-add-co-owner')" class="px-4 py-2 border rounded-lg text-slate-600 text-sm">ยกเลิก</button>
+                <button onclick="saveCoOwner()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: TRANSFER OWNERSHIP -->
+    <div id="modal-transfer-owner" class="hidden fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-900 text-lg">โอนกรรมสิทธิ์สัตว์เลี้ยง</h3>
+                <button onclick="closeModal('modal-transfer-owner')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">เจ้าของใหม่ (ผู้รับโอน) *</label>
+                    <select id="form-transfer-newowner" class="w-full border border-slate-300 rounded-lg p-2.5"></select>
+                </div>
+                <p class="text-xs text-rose-600">* การโอนกรรมสิทธิ์จะยุติสถานะเจ้าของเดิมและตั้งเจ้าของใหม่เป็นผู้ติดต่อหลัก</p>
+            </div>
+            <div class="flex justify-end gap-2 border-t pt-3">
+                <button onclick="closeModal('modal-transfer-owner')" class="px-4 py-2 border rounded-lg text-slate-600 text-sm">ยกเลิก</button>
+                <button onclick="saveTransferOwner()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">ยืนยันการโอน</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // INITIAL DATABASE STATE (MOCK DATA)
+        // ==========================================
+        const state = {
+            owners: [
+                { owner_id: 'O-001', owner_name: 'คุณวณิชยา สุมเสนจ', contact: '081-234-5678', address: '123/45 ถนนเพชรเกษม กรุงเทพฯ' },
+                { owner_id: 'O-002', owner_name: 'คุณพรพรรณ สดใส', contact: '089-999-1111', address: '55 หมู่ 2 นครปฐม' },
+                { owner_id: 'O-003', owner_name: 'คุณสมเกียรติ เกียรติยศ', contact: '081-234-5678', address: '88/9 ถ.บางแค กรุงเทพฯ' },
+                { owner_id: 'O-004', owner_name: 'คุณอารีย์ ดียิ่ง', contact: '099-999-0000', address: '12/1 นนทบุรี' },
+                { owner_id: 'O-005', owner_name: 'คุณทวีศักดิ์ ศักดิ์สิทธิ์', contact: '098-888-9999', address: '99/4 กรุงเทพฯ' },
+                { owner_id: 'O-006', owner_name: 'คุณสุทัตตา ลมเย็น', contact: '086-111-2222', address: '44/12 สมุทรปราการ' },
+                { owner_id: 'O-007', owner_name: 'คุณเอกราช ยอดเยี่ยม', contact: '087-777-7777', address: '77/3 บางบอน' },
+                { owner_id: 'O-025', owner_name: 'สิริวิมล ภักดีบำรุง', contact: '056-789-0456', address: 'ธนบุรี กรุงเทพฯ' }
+            ],
+            pets: [
+                { pet_id: 'P-004', pet_name: 'กะทิ', species: 'แมว', breed: 'ไทย (วิเชียรมาศ)', sex: 'เมีย', estimated_birth_date: '2022-02-15' },
+                { pet_id: 'P-006', pet_name: 'ขนมผิง', species: 'สุนัข', breed: 'ปอมเมอเรเนียน', sex: 'เมีย', estimated_birth_date: '2023-05-10' },
+                { pet_id: 'P-018', pet_name: 'เป๋าตัง', species: 'สุนัข', breed: 'โกลเด้น รีทรีฟเวอร์', sex: 'ผู้', estimated_birth_date: '2021-04-12' },
+                { pet_id: 'P-020', pet_name: 'แจ็คพ็อต', species: 'สุนัข', breed: 'ชิหัวหวั้ว', sex: 'ผู้', estimated_birth_date: '2020-01-01' },
+                { pet_id: 'P-021', pet_name: 'หมาปิ้ง', species: 'แมว', breed: 'สก็อตติช โฟลด์', sex: 'เมีย', estimated_birth_date: '2026-09-01' }
+            ],
+            pet_owners: [
+                { pet_id: 'P-004', owner_id: 'O-001', start_date: '2022-02-15', end_date: null, is_primary_contact: true },
+                { pet_id: 'P-006', owner_id: 'O-002', start_date: '2023-05-10', end_date: null, is_primary_contact: true },
+                { pet_id: 'P-018', owner_id: 'O-005', start_date: '2021-04-12', end_date: null, is_primary_contact: true },
+                { pet_id: 'P-020', owner_id: 'O-003', start_date: '2020-01-01', end_date: null, is_primary_contact: true },
+                { pet_id: 'P-021', owner_id: 'O-007', start_date: '2026-09-20', end_date: null, is_primary_contact: true },
+                { pet_id: 'P-021', owner_id: 'O-025', start_date: '2026-09-20', end_date: '2026-09-20', is_primary_contact: false }
+            ],
+            vets: [
+                { vet_id: 'V-01', vet_name: 'น.สพ. ไอบุญ รักษาสัตว์', vet_phone: '081-000-0001', license_no: 'VET-1001' },
+                { vet_id: 'V-02', vet_name: 'สพ.ญ. ปราณี ใจดี', vet_phone: '081-000-0002', license_no: 'VET-1002' },
+                { vet_id: 'V-04', vet_name: 'สพ.ญ. ละมุน อ่อนโยน', vet_phone: '081-000-0004', license_no: 'VET-1004' },
+                { vet_id: 'V-05', vet_name: 'น.สพ. เชี่ยวชาญ งานผ่าตัด', vet_phone: '081-000-0005', license_no: 'VET-1005' },
+                { vet_id: 'V-06', vet_name: 'สพ.ญ. รอบรู้ ดูแลดี', vet_phone: '081-000-0006', license_no: 'VET-1006' },
+                { vet_id: 'V-07', vet_name: 'น.สพ. สมบูรณ์ พูนสุข', vet_phone: '081-000-0007', license_no: 'VET-1007' }
+            ],
+            procedure_types: [
+                { procedure_type_id: 'PT-01', procedure_name: 'ตรวจร่างกายทั่วไป' },
+                { procedure_type_id: 'PT-02', procedure_name: 'ฉีดวัคซีนพิษสุนัขบ้า' },
+                { procedure_type_id: 'PT-03', procedure_name: 'ฉีดวัคซีนรวมแมว' },
+                { procedure_type_id: 'PT-04', procedure_name: 'ทำหมันแมวตัวเมีย' },
+                { procedure_type_id: 'PT-05', procedure_name: 'ผ่าตัดทำแผล/เย็บแผล' },
+                { procedure_type_id: 'PT-06', procedure_name: 'อัลตราซาวด์ (Ultrasound)' },
+                { procedure_type_id: 'PT-07', procedure_name: 'เอ็กซเรย์ (X-Ray)' }
+            ],
+            drugs: [
+                { drug_id: 'D-001', drug_name: 'Amoxicillin 250mg', dosage_form: 'เม็ด', dispensing_unit: 'เม็ด', current_price: 5.00 },
+                { drug_id: 'D-004', drug_name: 'Carprofen 25mg', dosage_form: 'เม็ด', dispensing_unit: 'เม็ด', current_price: 20.00 },
+                { drug_id: 'D-007', drug_name: 'Rabies Vaccine (Defensor)', dosage_form: 'ยาฉีด', dispensing_unit: 'โดส', current_price: 150.00 },
+                { drug_id: 'D-009', drug_name: 'Felocell 4 (วัคซีนแมว)', dosage_form: 'ยาฉีด', dispensing_unit: 'โดส', current_price: 350.00 },
+                { drug_id: 'D-011', drug_name: 'Betadine Solution 15ml', dosage_form: 'ยาทา', dispensing_unit: 'ขวด', current_price: 45.00 }
+            ],
+            appointments: [
+                { appointment_id: 'APT-014', pet_id: 'P-004', contact_owner_id: 'O-001', vet_id: 'V-07', appt_datetime: '2026-09-21 14:51', reason: 'งดอาหารมา 12 ชม. ตรวจประจำปี', status: 'เสร็จสิ้น' },
+                { appointment_id: 'APT-015', pet_id: 'P-006', contact_owner_id: 'O-002', vet_id: 'V-05', appt_datetime: '2026-09-21 19:52', reason: 'ปวดท้อง เกาตามตัว', status: 'ยืนยันแล้ว' }
+            ],
+            visits: [
+                {
+                    visit_id: 'VS-004',
+                    pet_id: 'P-004',
+                    appointment_id: 'APT-014',
+                    brought_by_owner_id: 'O-001',
+                    arrival_datetime: '2026-09-21 13:50',
+                    weight: 3.80,
+                    initial_symptoms: 'งดอาหารมาแล้ว 12 ชม. ซึมเล็กน้อย',
+                    status: 'IN_PROGRESS'
+                }
+            ],
+            visit_vets: [
+                { visit_id: 'VS-004', vet_id: 'V-04', role: 'แพทย์หลักเจ้าของไข้', is_primary: true },
+                { visit_id: 'VS-004', vet_id: 'V-05', role: 'แพทย์ร่วมตรวจ/ผ่าตัด', is_primary: false }
+            ],
+            diagnoses: [
+                { diagnosis_id: 'DG-001', visit_id: 'VS-004', vet_id: 'V-04', diagnosis_text: 'ฉิดยารอบ 2 อาการเริ่มดีขึ้น ไม่พบไข้สูง', diagnosed_at: '2026-09-21 14:35' },
+                { diagnosis_id: 'DG-002', visit_id: 'VS-004', vet_id: 'V-04', diagnosis_text: 'สงสัยไข้หัดแมวระยะแรก ติดตามผลตรวจเลือด', diagnosed_at: '2026-09-21 14:38' }
+            ],
+            procedures: [
+                { procedure_id: 'PR-001', visit_id: 'VS-004', procedure_type_id: 'PT-03', performed_by_vet_id: 'V-04', performed_at: '2026-09-21 14:15', charged_price: 350.00 },
+                { procedure_id: 'PR-002', visit_id: 'VS-004', procedure_type_id: 'PT-06', performed_by_vet_id: 'V-05', performed_at: '2026-09-21 14:30', charged_price: 1200.00 }
+            ],
+            prescriptions: [
+                { prescription_id: 'RX-001', visit_id: 'VS-004', vet_id: 'V-04', prescribed_at: '2026-09-21 14:40' }
+            ],
+            prescription_items: [
+                { prescription_id: 'RX-001', drug_id: 'D-001', quantity: 10, dose: '1 เม็ด', frequency: 'วันละ 2 ครั้ง', duration: '5 วัน', instructions: 'หลังอาหาร เช้า-เย็น' },
+                { prescription_id: 'RX-001', drug_id: 'D-004', quantity: 5, dose: '1/2 เม็ด', frequency: 'วันละ 1 ครั้ง', duration: '5 วัน', instructions: 'หลังอาหารเช้า' }
+            ],
+            invoices: [
+                { invoice_id: 'INV-004', visit_id: 'VS-004', responsible_owner_id: 'O-001', invoice_date: '2026-09-21 15:00', total_amount: 1800.00, status: 'รอชำระ' }
+            ],
+            expense_items: [
+                { expense_item_id: 'EX-001', invoice_id: 'INV-004', source_type: 'PROCEDURE', source_id: 'PR-001', description: 'ฉีดวัคซีนรวมแมว', unit_price: 350.00, quantity: 1, amount: 350.00 },
+                { expense_item_id: 'EX-002', invoice_id: 'INV-004', source_type: 'PROCEDURE', source_id: 'PR-002', description: 'อัลตราซาวด์ (Ultrasound)', unit_price: 1200.00, quantity: 1, amount: 1200.00 },
+                { expense_item_id: 'EX-003', invoice_id: 'INV-004', source_type: 'DRUG', source_id: 'D-001', description: 'Amoxicillin 250mg (10 เม็ด)', unit_price: 5.00, quantity: 10, amount: 50.00 },
+                { expense_item_id: 'EX-004', invoice_id: 'INV-004', source_type: 'DRUG', source_id: 'D-004', description: 'Carprofen 25mg (5 เม็ด)', unit_price: 20.00, quantity: 5, amount: 200.00 }
+            ],
+            payments: [
+                { payment_id: 'PAY-001', invoice_id: 'INV-004', paid_at: '2026-09-21 15:10', amount: 1000.00, payment_method: 'เงินสด (Cash)', reference_no: 'CASH-9912' }
+            ],
+            activeWorkspaceVisitId: null,
+            selectedOwnershipPetId: 'P-021'
+        };
+
+        // ==========================================
+        // NAVIGATION & TAB SWITCHING
+        // ==========================================
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-link').forEach(el => {
+                el.classList.remove('bg-slate-800', 'text-white');
+                el.classList.add('text-slate-300');
+            });
+
+            const activeTab = document.getElementById(`tab-${tabName}`);
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            if (activeTab) activeTab.classList.remove('hidden');
+            if (activeNav) {
+                activeNav.classList.add('bg-slate-800', 'text-white');
+                activeNav.classList.remove('text-slate-300');
+            }
+
+            // Update Page Header Title
+            const titles = {
+                appointments: 'ปฏิทินนัดหมาย (Appointment)',
+                visits: 'คิวเข้ารักษา & ห้องตรวจรักษา (Active Visit Workspace)',
+                finance: 'ระบบการเงิน & ออกใบแจ้งหนี้ (Cashier & Billing)',
+                owners: 'จัดการข้อมูลเจ้าของสัตว์ (Owner Management)',
+                pets: 'จัดการข้อมูลสัตว์เลี้ยง (Pet Directory)',
+                vets: 'จัดการข้อมูลสัตวแพทย์ (Veterinarian Directory)',
+                drugs: 'จัดการคลังข้อมูลยาและเวชภัณฑ์ (Pharmacy Master)',
+                ownership: 'โอนย้ายและจัดการกรรมสิทธิ์สัตว์เลี้ยง (Ownership History)',
+                reports: 'แดชบอร์ดสรุปรายงานประจำวัน (Clinic Executive Dashboard)'
+            };
+            document.getElementById('page-title').innerText = titles[tabName] || 'VetClinic System';
+
+            // Refresh tab views
+            if (tabName === 'appointments') renderAppointments();
+            if (tabName === 'visits') renderVisits();
+            if (tabName === 'finance') renderFinanceTab();
+            if (tabName === 'owners') renderOwners();
+            if (tabName === 'pets') renderPets();
+            if (tabName === 'vets') renderVets();
+            if (tabName === 'drugs') renderDrugs();
+            if (tabName === 'ownership') renderOwnershipTab();
+            if (tabName === 'reports') renderReports();
+        }
+
+        // ==========================================
+        // Helper Data Lookup Functions
+        function getPet(id) { return state.pets.find(p => p.pet_id === id) || {}; }
+        function getOwner(id) { return state.owners.find(o => o.owner_id === id) || {}; }
+        function getVet(id) { return state.vets.find(v => v.vet_id === id) || {}; }
+        function getDrug(id) { return state.drugs.find(d => d.drug_id === id) || {}; }
+        function getPrimaryOwnerForPet(petId) {
+            const rel = state.pet_owners.find(po => po.pet_id === petId && !po.end_date && po.is_primary_contact);
+            return rel ? getOwner(rel.owner_id) : {};
+        }
+
+        function showToast(msg, type = 'success') {
+            const el = document.getElementById('toast-message');
+            el.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-200', 'bg-rose-50', 'text-rose-800', 'border-rose-200');
+            if (type === 'success') {
+                el.classList.add('bg-emerald-50', 'text-emerald-800', 'border-emerald-200');
+                el.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-2"></i> ${msg}`;
+            } else {
+                el.classList.add('bg-rose-50', 'text-rose-800', 'border-rose-200');
+                el.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mr-2"></i> ${msg}`;
+            }
+            setTimeout(() => el.classList.add('hidden'), 4000);
+        }
+
+        function openModal(id) {
+            populateDropdowns();
+            document.getElementById(id).classList.remove('hidden');
+        }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function populateDropdowns() {
+            // Pet options
+            const petOpts = state.pets.map(p => `<option value="${p.pet_id}">${p.pet_name} (${p.pet_id} - ${p.species})</option>`).join('');
+            document.querySelectorAll('#form-appt-pet, #form-walkin-pet').forEach(el => el.innerHTML = petOpts);
+
+            // Owner options
+            const ownerOpts = state.owners.map(o => `<option value="${o.owner_id}">${o.owner_name} (${o.owner_id}) - ${o.contact}</option>`).join('');
+            document.querySelectorAll('#form-pet-owner, #form-appt-owner, #form-walkin-owner, #form-coowner-select, #form-transfer-newowner').forEach(el => el.innerHTML = ownerOpts);
+
+            // Vet options
+            const vetOpts = state.vets.map(v => `<option value="${v.vet_id}">${v.vet_name} (${v.license_no})</option>`).join('');
+            document.querySelectorAll('#form-appt-vet, #form-walkin-vet, #ws-diag-vet, #ws-proc-vet, #ws-rx-vet, #ws-add-vet-select, #form-vet-select').forEach(el => el.innerHTML = vetOpts);
+
+            // Proc type options
+            const procOpts = state.procedure_types.map(pt => `<option value="${pt.procedure_type_id}">${pt.procedure_name}</option>`).join('');
+            const wsProc = document.getElementById('ws-proc-type');
+            if (wsProc) wsProc.innerHTML = procOpts;
+
+            // Drug options
+            const drugOpts = state.drugs.map(d => `<option value="${d.drug_id}">${d.drug_name} (฿${d.current_price}/${d.dispensing_unit})</option>`).join('');
+            const wsRxDrug = document.getElementById('ws-rx-drug');
+            if (wsRxDrug) wsRxDrug.innerHTML = drugOpts;
+
+            // Walkin Appt options
+            const todayAppts = state.appointments.filter(a => a.status === 'ยืนยันแล้ว');
+            const walkinApptOpts = '<option value="">-- เคส Walk-in (ไม่มีนัด) --</option>' + todayAppts.map(a => {
+                const pet = getPet(a.pet_id);
+                return `<option value="${a.appointment_id}">[นัด ${a.appt_datetime.split(' ')[1]}] ${pet.pet_name} - ${a.reason}</option>`;
+            }).join('');
+            const walkinApptEl = document.getElementById('form-walkin-appt');
+            if (walkinApptEl) walkinApptEl.innerHTML = walkinApptOpts;
+        }
+
+        // ==========================================
+        // APPOINTMENTS MODULE
+        function renderAppointments() {
+            const filterDate = document.getElementById('appt-filter-date').value;
+            const filterStatus = document.getElementById('appt-filter-status').value;
+            const grid = document.getElementById('appointments-grid');
+
+            let list = state.appointments;
+            if (filterDate) list = list.filter(a => a.appt_datetime.startsWith(filterDate));
+            if (filterStatus !== 'ALL') list = list.filter(a => a.status === filterStatus);
+
+            if (list.length === 0) {
+                grid.innerHTML = `<div class="col-span-full p-8 text-center text-slate-400 bg-white rounded-xl border border-dashed">ไม่มีรายการนัดหมายตามเงื่อนไขที่เลือก</div>`;
+                return;
+            }
+
+            grid.innerHTML = list.map(a => {
+                const pet = getPet(a.pet_id);
+                const owner = getOwner(a.contact_owner_id);
+                const vet = getVet(a.vet_id);
+                const time = a.appt_datetime.split(' ')[1] || '';
+
+                let statusBadge = '';
+                if (a.status === 'ยืนยันแล้ว') statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">ยืนยันแล้ว</span>`;
+                else if (a.status === 'เสร็จสิ้น') statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">เสร็จสิ้น (เข้าตรวจ)</span>`;
+                else statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">ยกเลิก</span>`;
+
+                return `
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition space-y-3">
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg font-bold text-slate-800"><i class="fa-regular fa-clock text-emerald-600 mr-1"></i> ${time} น.</span>
+                        </div>
+                        ${statusBadge}
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-base">${pet.pet_name || 'สัตว์เลี้ยง'} <span class="text-xs text-slate-400">(${pet.species} ${pet.breed})</span></h4>
+                        <p class="text-xs text-slate-600 mt-1"><i class="fa-solid fa-notes-medical mr-1 text-slate-400"></i> เหตุผล: ${a.reason}</p>
+                    </div>
+                    <div class="text-xs text-slate-500 border-t pt-2 space-y-1">
+                        <p><i class="fa-solid fa-user-doctor text-emerald-600 mr-1"></i> แพทย์: ${vet.vet_name || '-'}</p>
+                        <p><i class="fa-solid fa-user text-blue-600 mr-1"></i> ผู้ติดต่อ: ${owner.owner_name || '-'} (${owner.contact})</p>
+                    </div>
+                    ${a.status === 'ยืนยันแล้ว' ? `
+                    <div class="pt-2 flex gap-2">
+                        <button onclick="checkinAppointment('${a.appointment_id}')" class="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition">
+                            <i class="fa-solid fa-check mr-1"></i> เช็คอิน (เปิด Visit)
+                        </button>
+                        <button onclick="cancelAppointment('${a.appointment_id}')" class="py-1.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs font-medium">
+                            ยกเลิก
+                        </button>
+                    </div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        function saveAppointment() {
+            const pet_id = document.getElementById('form-appt-pet').value;
+            const contact_owner_id = document.getElementById('form-appt-owner').value;
+            const vet_id = document.getElementById('form-appt-vet').value;
+            const date = document.getElementById('form-appt-date').value;
+            const time = document.getElementById('form-appt-time').value;
+            const reason = document.getElementById('form-appt-reason').value;
+
+            if (!reason) { alert('กรุณาระบุเหตุผลการนัดหมาย'); return; }
+
+            const appt_datetime = `${date} ${time}`;
+            
+            // Check clinician overlap constraint
+            const overlap = state.appointments.find(a => a.vet_id === vet_id && a.appt_datetime === appt_datetime && a.status === 'ยืนยันแล้ว');
+            if (overlap) {
+                alert(`สัตวแพทย์ท่านนี้มีนัดหมายเวลา ${time} น. อยู่แล้ว กรุณาเลือกช่วงเวลาอื่น`);
+                return;
+            }
+
+            const id = 'APT-' + String(state.appointments.length + 1).padStart(3, '0');
+            state.appointments.push({ appointment_id: id, pet_id, contact_owner_id, vet_id, appt_datetime, reason, status: 'ยืนยันแล้ว' });
+            closeModal('modal-add-appointment');
+            showToast(`สร้างนัดหมายสำเร็จ รหัส: ${id}`);
+            renderAppointments();
+        }
+
+        function onApptPetChange() {
+            const petId = document.getElementById('form-appt-pet').value;
+            const primaryOwner = getPrimaryOwnerForPet(petId);
+            if (primaryOwner.owner_id) {
+                document.getElementById('form-appt-owner').value = primaryOwner.owner_id;
+            }
+        }
+
+        function checkinAppointment(apptId) {
+            const appt = state.appointments.find(a => a.appointment_id === apptId);
+            if (!appt) return;
+
+            // Pre-fill walkin modal with appointment details
+            openWalkinModal();
+            document.getElementById('form-walkin-appt').value = apptId;
+            onWalkinApptSelect();
+        }
+
+        function cancelAppointment(apptId) {
+            const appt = state.appointments.find(a => a.appointment_id === apptId);
+            if (appt) {
+                appt.status = 'ยกเลิก';
+                showToast(`ยกเลิกนัดหมาย ${apptId} เรียบร้อยแล้ว`);
+                renderAppointments();
+            }
+        }
+
+        // ==========================================
+        // VISITS & CLINICAL WORKSPACE
+        function openWalkinModal() {
+            openModal('modal-walkin');
+            onWalkinPetSelect();
+        }
+
+        function onWalkinApptSelect() {
+            const apptId = document.getElementById('form-walkin-appt').value;
+            if (!apptId) return;
+            const appt = state.appointments.find(a => a.appointment_id === apptId);
+            if (appt) {
+                document.getElementById('form-walkin-pet').value = appt.pet_id;
+                onWalkinPetSelect();
+                document.getElementById('form-walkin-owner').value = appt.contact_owner_id;
+                document.getElementById('form-walkin-vet').value = appt.vet_id;
+                document.getElementById('form-walkin-symptoms').value = appt.reason;
+            }
+        }
+
+        function onWalkinPetSelect() {
+            const petId = document.getElementById('form-walkin-pet').value;
+            const owner = getPrimaryOwnerForPet(petId);
+            if (owner.owner_id) {
+                document.getElementById('form-walkin-owner').value = owner.owner_id;
+            }
+        }
+
+        function saveVisit() {
+            const apptId = document.getElementById('form-walkin-appt').value || null;
+            const pet_id = document.getElementById('form-walkin-pet').value;
+            const brought_by_owner_id = document.getElementById('form-walkin-owner').value;
+            const vet_id = document.getElementById('form-walkin-vet').value;
+            const weight = parseFloat(document.getElementById('form-walkin-weight').value) || 0;
+            const initial_symptoms = document.getElementById('form-walkin-symptoms').value;
+
+            if (!initial_symptoms) { alert('กรุณาระบุอาการเบื้องต้น'); return; }
+
+            const visit_id = 'VS-' + String(state.visits.length + 1).padStart(3, '0');
+            const arrival_datetime = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+            state.visits.push({
+                visit_id, pet_id, appointment_id: apptId, brought_by_owner_id, arrival_datetime, weight, initial_symptoms, status: 'IN_PROGRESS'
+            });
+
+            state.visit_vets.push({ visit_id, vet_id, role: 'แพทย์หลักเจ้าของไข้', is_primary: true });
+
+            if (apptId) {
+                const appt = state.appointments.find(a => a.appointment_id === apptId);
+                if (appt) appt.status = 'เสร็จสิ้น';
+            }
+
+            closeModal('modal-walkin');
+            showToast(`เปิดเคสเข้ารักษาสำเร็จ รหัส: ${visit_id}`);
+            switchTab('visits');
+        }
+
+        function renderVisits() {
+            const grid = document.getElementById('visits-grid');
+            const activeVisits = state.visits.filter(v => v.status === 'IN_PROGRESS');
+
+            if (activeVisits.length === 0) {
+                grid.innerHTML = `<div class="col-span-full p-8 text-center text-slate-400 bg-white rounded-xl border border-dashed">ไม่มีเคสที่อยู่ระหว่างการตรวจขณะนี้</div>`;
+                return;
+            }
+
+            grid.innerHTML = activeVisits.map(v => {
+                const pet = getPet(v.pet_id);
+                const owner = getOwner(v.brought_by_owner_id);
+                const primaryVetRel = state.visit_vets.find(vv => vv.visit_id === v.visit_id && vv.is_primary);
+                const vet = primaryVetRel ? getVet(primaryVetRel.vet_id) : {};
+
+                return `
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="px-2.5 py-1 bg-rose-100 text-rose-700 font-mono font-bold text-xs rounded-full">${v.visit_id}</span>
+                        <span class="text-xs text-slate-400"><i class="fa-regular fa-clock mr-1"></i> มาถึง ${v.arrival_datetime.split(' ')[1] || ''} น.</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-base">${pet.pet_name || 'สัตว์เลี้ยง'} <span class="text-xs text-slate-500">(${pet.species})</span></h4>
+                        <p class="text-xs text-slate-600 mt-1"><i class="fa-solid fa-notes-medical mr-1 text-slate-400"></i> อาการ: ${v.initial_symptoms}</p>
+                    </div>
+                    <div class="text-xs text-slate-500 border-t pt-2 space-y-1">
+                        <p><i class="fa-solid fa-user-doctor text-emerald-600 mr-1"></i> หมอหลัก: ${vet.vet_name || '-'}</p>
+                        <p><i class="fa-solid fa-user text-blue-600 mr-1"></i> พามาโดย: ${owner.owner_name || '-'}</p>
+                    </div>
+                    <button onclick="openWorkspace('${v.visit_id}')" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-stethoscope"></i> เข้าห้องตรวจ (Workspace)
+                    </button>
+                </div>`;
+            }).join('');
+        }
+
+        function openWorkspace(visitId) {
+            state.activeWorkspaceVisitId = visitId;
+            const visit = state.visits.find(v => v.visit_id === visitId);
+            const pet = getPet(visit.pet_id);
+
+            document.getElementById('ws-pet-title').innerText = `${pet.pet_name} (${pet.pet_id})`;
+            document.getElementById('ws-pet-subtitle').innerText = `${pet.species} | พันธุ์ ${pet.breed} | เพศ: ${pet.sex} | น้ำหนัก: ${visit.weight} กก.`;
+            document.getElementById('ws-visit-code').innerText = visit.visit_id;
+
+            populateDropdowns();
+            renderWsDiagnosis();
+            renderWsProcedures();
+            renderWsPrescriptions();
+            renderWsVets();
+
+            document.getElementById('workspace-container').classList.remove('hidden');
+            switchWsTab('diag');
+        }
+
+        function closeWorkspace() {
+            document.getElementById('workspace-container').classList.add('hidden');
+            state.activeWorkspaceVisitId = null;
+        }
+
+        function switchWsTab(wsTab) {
+            document.querySelectorAll('.ws-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.ws-tab-btn').forEach(el => {
+                el.classList.remove('border-emerald-600', 'text-emerald-700');
+                el.classList.add('border-transparent', 'text-slate-600');
+            });
+
+            document.getElementById(`wstab-${wsTab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`wstab-btn-${wsTab}`);
+            if (activeBtn) {
+                activeBtn.classList.add('border-emerald-600', 'text-emerald-700');
+                activeBtn.classList.remove('border-transparent', 'text-slate-600');
+            }
+        }
+
+        // WS Diagnosis
+        function renderWsDiagnosis() {
+            const list = state.diagnoses.filter(d => d.visit_id === state.activeWorkspaceVisitId);
+            const el = document.getElementById('ws-diag-list');
+            if (list.length === 0) {
+                el.innerHTML = `<p class="text-xs text-slate-400 border p-3 rounded-lg">ยังไม่มีรายการผลวินิจฉัย</p>`;
+                return;
+            }
+            el.innerHTML = list.map(d => {
+                const vet = getVet(d.vet_id);
+                return `
+                <div class="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100 text-xs space-y-1">
+                    <div class="flex justify-between font-bold text-slate-800">
+                        <span><i class="fa-solid fa-user-doctor text-emerald-600 mr-1"></i> ${vet.vet_name}</span>
+                        <span class="text-slate-400 font-normal">${d.diagnosed_at}</span>
+                    </div>
+                    <p class="text-slate-700">${d.diagnosis_text}</p>
+                </div>`;
+            }).join('');
+        }
+
+        function addDiagnosis() {
+            const vet_id = document.getElementById('ws-diag-vet').value;
+            const text = document.getElementById('ws-diag-text').value;
+            if (!text) return;
+
+            const id = 'DG-' + String(state.diagnoses.length + 1).padStart(3, '0');
+            const now = new Date().toISOString().replace('T', ' ').substring(0, 16);
+            state.diagnoses.push({ diagnosis_id: id, visit_id: state.activeWorkspaceVisitId, vet_id, diagnosis_text: text, diagnosed_at: now });
+            document.getElementById('ws-diag-text').value = '';
+            renderWsDiagnosis();
+            showToast('บันทึกผลการวินิจฉัยแล้ว');
+        }
+
+        // WS Procedures
+        function onProcTypeSelect() {
+            const ptId = document.getElementById('ws-proc-type').value;
+            const defaultPrices = { 'PT-01': 200, 'PT-02': 150, 'PT-03': 350, 'PT-04': 2500, 'PT-05': 800, 'PT-06': 1200, 'PT-07': 500 };
+            document.getElementById('ws-proc-price').value = defaultPrices[ptId] || 300;
+        }
+
+        function renderWsProcedures() {
+            const list = state.procedures.filter(p => p.visit_id === state.activeWorkspaceVisitId);
+            const el = document.getElementById('ws-proc-list');
+            if (list.length === 0) {
+                el.innerHTML = `<p class="text-xs text-slate-400 border p-3 rounded-lg">ยังไม่มีรายการหัตถการ</p>`;
+                return;
+            }
+            el.innerHTML = list.map(p => {
+                const pt = state.procedure_types.find(x => x.procedure_type_id === p.procedure_type_id) || {};
+                const vet = getVet(p.performed_by_vet_id);
+                return `
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+                    <div>
+                        <span class="font-bold text-slate-800">${pt.procedure_name}</span>
+                        <p class="text-slate-500"><i class="fa-solid fa-user-doctor mr-1"></i> ${vet.vet_name} | ${p.performed_at}</p>
+                    </div>
+                    <span class="font-mono font-bold text-emerald-700 text-sm">฿${p.charged_price.toFixed(2)}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function addProcedure() {
+            const procedure_type_id = document.getElementById('ws-proc-type').value;
+            const performed_by_vet_id = document.getElementById('ws-proc-vet').value;
+            const price = parseFloat(document.getElementById('ws-proc-price').value) || 0;
+
+            const id = 'PR-' + String(state.procedures.length + 1).padStart(3, '0');
+            const now = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+            state.procedures.push({ procedure_id: id, visit_id: state.activeWorkspaceVisitId, procedure_type_id, performed_by_vet_id, performed_at: now, charged_price: price });
+            renderWsProcedures();
+            showToast('บันทึกหัตถการเรียบร้อย');
+        }
+
+        // WS Prescriptions
+        function getOrCreatePrescription() {
+            let rx = state.prescriptions.find(r => r.visit_id === state.activeWorkspaceVisitId);
+            if (!rx) {
+                const id = 'RX-' + String(state.prescriptions.length + 1).padStart(3, '0');
+                const vet_id = document.getElementById('ws-rx-vet').value || 'V-04';
+                const now = new Date().toISOString().replace('T', ' ').substring(0, 16);
+                rx = { prescription_id: id, visit_id: state.activeWorkspaceVisitId, vet_id, prescribed_at: now };
+                state.prescriptions.push(rx);
+            }
+            return rx;
+        }
+
+        function renderWsPrescriptions() {
+            const rx = state.prescriptions.find(r => r.visit_id === state.activeWorkspaceVisitId);
+            const tbody = document.getElementById('ws-rx-items-body');
+            if (!rx) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-xs text-slate-400">ยังไม่มีรายการใบสั่งยา</td></tr>`;
+                return;
+            }
+            const items = state.prescription_items.filter(i => i.prescription_id === rx.prescription_id);
+            if (items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-xs text-slate-400">ยังไม่มีรายการยาในใบสั่งนี้</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = items.map(item => {
+                const drug = getDrug(item.drug_id);
+                const itemTotal = (drug.current_price || 0) * item.quantity;
+                return `
+                <tr class="border-b text-xs">
+                    <td class="p-2 font-medium text-slate-800">${drug.drug_name}</td>
+                    <td class="p-2">${item.quantity} ${drug.dispensing_unit}</td>
+                    <td class="p-2">${item.dose} ${item.frequency}</td>
+                    <td class="p-2 text-right font-mono">฿${(drug.current_price || 0).toFixed(2)}</td>
+                    <td class="p-2 text-right font-mono font-bold text-emerald-700">฿${itemTotal.toFixed(2)}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="removeRxItem('${item.prescription_id}', '${item.drug_id}')" class="text-rose-600 hover:text-rose-800"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function addRxItem() {
+            const rx = getOrCreatePrescription();
+            const drug_id = document.getElementById('ws-rx-drug').value;
+            const quantity = parseInt(document.getElementById('ws-rx-qty').value) || 1;
+            const dose = document.getElementById('ws-rx-dose').value || '1 เม็ด';
+            const frequency = document.getElementById('ws-rx-freq').value || 'วันละ 2 ครั้ง หลังอาหาร';
+
+            state.prescription_items.push({
+                prescription_id: rx.prescription_id, drug_id, quantity, dose, frequency, duration: '5 วัน', instructions: ''
+            });
+
+            renderWsPrescriptions();
+            showToast('สั่งยาเรียบร้อย');
+        }
+
+        function removeRxItem(rxId, drugId) {
+            state.prescription_items = state.prescription_items.filter(i => !(i.prescription_id === rxId && i.drug_id === drugId));
+            renderWsPrescriptions();
+        }
+
+        // WS Vets Care Team
+        function renderWsVets() {
+            const list = state.visit_vets.filter(vv => vv.visit_id === state.activeWorkspaceVisitId);
+            const el = document.getElementById('ws-vets-list');
+            el.innerHTML = list.map(vv => {
+                const vet = getVet(vv.vet_id);
+                return `
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs flex justify-between items-center">
+                    <div>
+                        <span class="font-bold text-slate-800">${vet.vet_name}</span>
+                        <span class="ml-2 px-2 py-0.5 rounded text-[10px] ${vv.is_primary ? 'bg-emerald-100 text-emerald-800 font-bold' : 'bg-slate-200 text-slate-700'}">${vv.role}</span>
+                    </div>
+                    <span class="text-slate-400">${vet.license_no}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function addVetToVisit() {
+            const vet_id = document.getElementById('ws-add-vet-select').value;
+            const role = document.getElementById('ws-add-vet-role').value || 'สัตวแพทย์ผู้ช่วย';
+            
+            // Avoid duplicate
+            const exists = state.visit_vets.find(vv => vv.visit_id === state.activeWorkspaceVisitId && vv.vet_id === vet_id);
+            if (exists) { alert('สัตวแพทย์ท่านนี้มีในทีมเคสนี้แล้ว'); return; }
+
+            state.visit_vets.push({ visit_id: state.activeWorkspaceVisitId, vet_id, role, is_primary: false });
+            renderWsVets();
+            showToast('มอบหมายสัตวแพทย์เพิ่มในทีมสำเร็จ');
+        }
+
+        function finishVisitAndSendToCashier() {
+            const visit = state.visits.find(v => v.visit_id === state.activeWorkspaceVisitId);
+            if (!visit) return;
+
+            // Calculate auto total invoice charges
+            let total = 0;
+            const items = [];
+
+            // Procedures
+            const procs = state.procedures.filter(p => p.visit_id === visit.visit_id);
+            procs.forEach(p => {
+                const pt = state.procedure_types.find(x => x.procedure_type_id === p.procedure_type_id) || {};
+                total += p.charged_price;
+                items.push({
+                    expense_item_id: 'EX-' + String(state.expense_items.length + items.length + 1).padStart(3, '0'),
+                    source_type: 'PROCEDURE',
+                    source_id: p.procedure_id,
+                    description: pt.procedure_name,
+                    unit_price: p.charged_price,
+                    quantity: 1,
+                    amount: p.charged_price
+                });
+            });
+
+            // Prescriptions
+            const rx = state.prescriptions.find(r => r.visit_id === visit.visit_id);
+            if (rx) {
+                const rxItems = state.prescription_items.filter(i => i.prescription_id === rx.prescription_id);
+                rxItems.forEach(i => {
+                    const drug = getDrug(i.drug_id);
+                    const amt = (drug.current_price || 0) * i.quantity;
+                    total += amt;
+                    items.push({
+                        expense_item_id: 'EX-' + String(state.expense_items.length + items.length + 1).padStart(3, '0'),
+                        source_type: 'DRUG',
+                        source_id: i.drug_id,
+                        description: `${drug.drug_name} (${i.quantity} ${drug.dispensing_unit})`,
+                        unit_price: drug.current_price,
+                        quantity: i.quantity,
+                        amount: amt
+                    });
+                });
+            }
+
+            // Create Invoice
+            const invoice_id = 'INV-' + String(state.invoices.length + 1).padStart(3, '0');
+            const now = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+            const newInv = {
+                invoice_id,
+                visit_id: visit.visit_id,
+                responsible_owner_id: visit.brought_by_owner_id,
+                invoice_date: now,
+                total_amount: total,
+                status: 'รอชำระ'
+            };
+
+            items.forEach(it => it.invoice_id = invoice_id);
+
+            state.invoices.push(newInv);
+            state.expense_items.push(...items);
+
+            visit.status = 'COMPLETED';
+            closeWorkspace();
+            showToast(`ปิดการรักษาสำเร็จ สรุปใบแจ้งหนี้เลขที่ ${invoice_id} ยอดรวม: ฿${total.toFixed(2)}`);
+            switchTab('finance');
+        }
+
+        // ==========================================
+        // FINANCE & CASHIER MODULE
+        function renderFinanceTab() {
+            // Pending billing completed visits
+            const pendingDiv = document.getElementById('completed-visits-pending-invoice');
+            const completedVisits = state.visits.filter(v => v.status === 'COMPLETED');
+            
+            pendingDiv.innerHTML = completedVisits.map(v => {
+                const pet = getPet(v.pet_id);
+                const inv = state.invoices.find(i => i.visit_id === v.visit_id);
+                return `
+                <div class="bg-white border border-amber-300 px-3 py-2 rounded-lg text-xs flex items-center gap-2">
+                    <span class="font-bold text-amber-900">${v.visit_id} (${pet.pet_name})</span>
+                    <span class="text-slate-500">บิล: ${inv ? inv.invoice_id : 'รอดำเนินการ'}</span>
+                </div>`;
+            }).join('');
+
+            renderInvoices();
+        }
+
+        function renderInvoices() {
+            const query = (document.getElementById('invoice-search')?.value || '').toLowerCase();
+            const tbody = document.getElementById('invoices-table-body');
+
+            let list = state.invoices;
+            if (query) {
+                list = list.filter(i => {
+                    const owner = getOwner(i.responsible_owner_id);
+                    return i.invoice_id.toLowerCase().includes(query) || (owner.owner_name || '').toLowerCase().includes(query);
+                });
+            }
+
+            tbody.innerHTML = list.map(inv => {
+                const visit = state.visits.find(v => v.visit_id === inv.visit_id) || {};
+                const pet = getPet(visit.pet_id);
+                const owner = getOwner(inv.responsible_owner_id);
+
+                // calculate payments
+                const paidSum = state.payments.filter(p => p.invoice_id === inv.invoice_id).reduce((s, p) => s + p.amount, 0);
+                const balance = Math.max(0, inv.total_amount - paidSum);
+
+                let statusBadge = '';
+                if (balance === 0) statusBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">ชำระแล้ว</span>`;
+                else if (paidSum > 0) statusBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">ชำระบางส่วน</span>`;
+                else statusBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">รอชำระ</span>`;
+
+                return `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-mono font-bold text-slate-800">${inv.invoice_id}</td>
+                    <td class="p-3 text-xs text-slate-500">${inv.invoice_date}</td>
+                    <td class="p-3 text-xs font-medium text-slate-700">${visit.visit_id || '-'} (${pet.pet_name || '-'})</td>
+                    <td class="p-3 text-xs text-slate-700">${owner.owner_name || '-'}</td>
+                    <td class="p-3 text-right font-mono font-semibold">฿${inv.total_amount.toFixed(2)}</td>
+                    <td class="p-3 text-right font-mono font-bold text-rose-600">฿${balance.toFixed(2)}</td>
+                    <td class="p-3 text-center">${statusBadge}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="viewInvoiceDetail('${inv.invoice_id}')" class="px-3 py-1 bg-slate-900 text-white rounded text-xs font-medium hover:bg-slate-800">
+                            เปิดบิล / รับเงิน
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function viewInvoiceDetail(invoiceId) {
+            state.activeInvoiceId = invoiceId;
+            const inv = state.invoices.find(i => i.invoice_id === invoiceId);
+            const owner = getOwner(inv.responsible_owner_id);
+
+            document.getElementById('inv-detail-id').innerText = inv.invoice_id;
+            document.getElementById('inv-detail-sub').innerText = `วันที่: ${inv.invoice_date} | ผู้รับผิดชอบชำระ: ${owner.owner_name} (${owner.contact})`;
+
+            // Items breakdown
+            const items = state.expense_items.filter(e => e.invoice_id === invoiceId);
+            const itemsBody = document.getElementById('inv-items-body');
+            itemsBody.innerHTML = items.map(item => `
+                <tr class="text-xs">
+                    <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-200 font-bold">${item.source_type}</span></td>
+                    <td class="p-2.5 font-medium text-slate-800">${item.description}</td>
+                    <td class="p-2.5 text-right font-mono">฿${item.unit_price.toFixed(2)}</td>
+                    <td class="p-2.5 text-right font-mono">${item.quantity}</td>
+                    <td class="p-2.5 text-right font-mono font-semibold text-slate-800">฿${item.amount.toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('inv-total-amount').innerText = `฿${inv.total_amount.toFixed(2)}`;
+
+            // Payments & Balance
+            const payments = state.payments.filter(p => p.invoice_id === invoiceId);
+            const paidSum = payments.reduce((s, p) => s + p.amount, 0);
+            const balance = Math.max(0, inv.total_amount - paidSum);
+
+            document.getElementById('inv-balance-due').innerText = `ยอดคงเหลือ: ฿${balance.toFixed(2)}`;
+            document.getElementById('pay-amount-input').value = balance;
+
+            const payList = document.getElementById('payment-history-list');
+            if (payments.length === 0) {
+                payList.innerHTML = `<p class="text-slate-400 p-2">ยังไม่มีประวัติการชำระเงิน</p>`;
+            } else {
+                payList.innerHTML = payments.map(p => `
+                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-slate-800">${p.payment_method} <span class="text-slate-400 font-normal">(${p.reference_no})</span></p>
+                            <p class="text-[10px] text-slate-400">${p.paid_at}</p>
+                        </div>
+                        <span class="font-mono font-bold text-emerald-700">฿${p.amount.toFixed(2)}</span>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('invoice-detail-view').classList.remove('hidden');
+        }
+
+        function closeInvoiceDetail() {
+            document.getElementById('invoice-detail-view').classList.add('hidden');
+        }
+
+        function submitPayment() {
+            const invoiceId = state.activeInvoiceId;
+            const inv = state.invoices.find(i => i.invoice_id === invoiceId);
+            const amount = parseFloat(document.getElementById('pay-amount-input').value) || 0;
+            const method = document.getElementById('pay-method-select').value;
+            const ref = document.getElementById('pay-ref-input').value || 'REF-' + Date.now().toString().slice(-4);
+
+            if (amount <= 0) { alert('กรุณาระบุจำนวนเงินที่ถูกต้อง'); return; }
+
+            const payId = 'PAY-' + String(state.payments.length + 1).padStart(3, '0');
+            const now = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+            state.payments.push({
+                payment_id: payId,
+                invoice_id: invoiceId,
+                paid_at: now,
+                amount,
+                payment_method: method,
+                reference_no: ref
+            });
+
+            // Update status if fully paid
+            const paidSum = state.payments.filter(p => p.invoice_id === invoiceId).reduce((s, p) => s + p.amount, 0);
+            if (paidSum >= inv.total_amount) {
+                inv.status = 'ชำระแล้ว';
+            }
+
+            showToast('บันทึกการชำระเงินเรียบร้อยแล้ว');
+            viewInvoiceDetail(invoiceId);
+            renderInvoices();
+        }
+
+        // ==========================================
+        // MASTER DATA MODULES (Owners, Pets, Vets, Drugs)
+        // ==========================================
+        function renderOwners() {
+            const query = (document.getElementById('owner-search')?.value || '').toLowerCase();
+            const tbody = document.getElementById('owners-table-body');
+            
+            let list = state.owners;
+            if (query) {
+                list = list.filter(o => o.owner_id.toLowerCase().includes(query) || o.owner_name.toLowerCase().includes(query) || o.contact.includes(query));
+            }
+
+            tbody.innerHTML = list.map(o => {
+                const petCount = state.pet_owners.filter(po => po.owner_id === o.owner_id && !po.end_date).length;
+                return `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-mono font-bold text-slate-800">${o.owner_id}</td>
+                    <td class="p-3 font-medium text-slate-900">${o.owner_name}</td>
+                    <td class="p-3 text-slate-600">${o.contact}</td>
+                    <td class="p-3 text-xs text-slate-500 max-w-xs truncate">${o.address}</td>
+                    <td class="p-3 text-center"><span class="px-2 py-1 bg-slate-100 rounded-full font-bold text-xs">${petCount} ตัว</span></td>
+                    <td class="p-3 text-center">
+                        <button onclick="switchTab('ownership')" class="text-blue-600 hover:text-blue-800 text-xs font-medium">ดูสัตว์เลี้ยง</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function saveOwner() {
+            const name = document.getElementById('form-owner-name').value;
+            const phone = document.getElementById('form-owner-phone').value;
+            const address = document.getElementById('form-owner-address').value;
+
+            if (!name || !phone) { alert('กรุณากรอกข้อมูลที่จำเป็น (*)'); return; }
+
+            const id = 'O-' + String(state.owners.length + 1).padStart(3, '0');
+            state.owners.push({ owner_id: id, owner_name: name, contact: phone, address });
+            closeModal('modal-add-owner');
+            showToast(`เพิ่มเจ้าของใหม่สำเร็จ รหัส: ${id}`);
+            renderOwners();
+        }
+
+        function renderPets() {
+            const query = (document.getElementById('pet-search')?.value || '').toLowerCase();
+            const tbody = document.getElementById('pets-table-body');
+
+            let list = state.pets;
+            if (query) {
+                list = list.filter(p => p.pet_id.toLowerCase().includes(query) || p.pet_name.toLowerCase().includes(query) || p.species.toLowerCase().includes(query));
+            }
+
+            tbody.innerHTML = list.map(p => {
+                const primaryOwner = getPrimaryOwnerForPet(p.pet_id);
+                return `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-mono font-bold text-slate-800">${p.pet_id}</td>
+                    <td class="p-3 font-bold text-slate-900">${p.pet_name}</td>
+                    <td class="p-3 text-xs text-slate-600">${p.species} / ${p.breed}</td>
+                    <td class="p-3 text-xs">${p.sex}</td>
+                    <td class="p-3 text-xs text-slate-500">${p.estimated_birth_date || '-'}</td>
+                    <td class="p-3 text-xs font-medium text-emerald-800">${primaryOwner.owner_name || '-'}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="selectPetOwnership('${p.pet_id}')" class="text-amber-600 hover:text-amber-800 text-xs font-medium"><i class="fa-solid fa-id-card mr-1"></i> กรรมสิทธิ์</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function savePet() {
+            const name = document.getElementById('form-pet-name').value;
+            const species = document.getElementById('form-pet-species').value;
+            const breed = document.getElementById('form-pet-breed').value;
+            const sex = document.getElementById('form-pet-sex').value;
+            const birth = document.getElementById('form-pet-birth').value;
+            const owner_id = document.getElementById('form-pet-owner').value;
+
+            if (!name || !breed) { alert('กรุณากรอกข้อมูลที่จำเป็น (*)'); return; }
+
+            const pet_id = 'P-' + String(state.pets.length + 1).padStart(3, '0');
+            state.pets.push({ pet_id, pet_name: name, species, breed, sex, estimated_birth_date: birth });
+
+            const today = new Date().toISOString().substring(0, 10);
+            state.pet_owners.push({ pet_id, owner_id, start_date: today, end_date: null, is_primary_contact: true });
+
+            closeModal('modal-add-pet');
+            showToast(`ขึ้นทะเบียนสัตว์เลี้ยงใหม่เรียบร้อย รหัส: ${pet_id}`);
+            renderPets();
+        }
+
+        function renderVets() {
+            const query = (document.getElementById('vet-search')?.value || '').toLowerCase();
+            const tbody = document.getElementById('vets-table-body');
+
+            let list = state.vets;
+            if (query) {
+                list = list.filter(v => v.vet_id.toLowerCase().includes(query) || v.vet_name.toLowerCase().includes(query) || v.license_no.toLowerCase().includes(query));
+            }
+
+            tbody.innerHTML = list.map(v => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-mono font-bold text-slate-800">${v.vet_id}</td>
+                    <td class="p-3 font-medium text-slate-900">${v.vet_name}</td>
+                    <td class="p-3 text-xs font-mono text-slate-600">${v.license_no}</td>
+                    <td class="p-3 text-xs text-slate-600">${v.vet_phone}</td>
+                    <td class="p-3 text-center"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold text-xs">ปฏิบัติงาน</span></td>
+                    <td class="p-3 text-center"><button class="text-slate-400 hover:text-slate-600 text-xs"><i class="fa-solid fa-pen"></i></button></td>
+                </tr>
+            `).join('');
+        }
+
+        function saveVet() {
+            const name = document.getElementById('form-vet-name').value;
+            const license = document.getElementById('form-vet-license').value;
+            const phone = document.getElementById('form-vet-phone').value;
+
+            if (!name || !license) { alert('กรุณากรอกข้อมูลสัตวแพทย์ให้ครบถ้วน'); return; }
+
+            const id = 'V-' + String(state.vets.length + 1).padStart(2, '0');
+            state.vets.push({ vet_id: id, vet_name: name, license_no: license, vet_phone: phone });
+
+            closeModal('modal-add-vet');
+            showToast(`เพิ่มสัตวแพทย์สำเร็จ รหัส: ${id}`);
+            renderVets();
+        }
+
+        function renderDrugs() {
+            const query = (document.getElementById('drug-search')?.value || '').toLowerCase();
+            const tbody = document.getElementById('drugs-table-body');
+
+            let list = state.drugs;
+            if (query) {
+                list = list.filter(d => d.drug_id.toLowerCase().includes(query) || d.drug_name.toLowerCase().includes(query));
+            }
+
+            tbody.innerHTML = list.map(d => `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-mono font-bold text-slate-800">${d.drug_id}</td>
+                    <td class="p-3 font-medium text-slate-900">${d.drug_name}</td>
+                    <td class="p-3 text-xs text-slate-600">${d.dosage_form}</td>
+                    <td class="p-3 text-xs text-slate-600">${d.dispensing_unit}</td>
+                    <td class="p-3 text-right font-mono font-bold text-emerald-700">฿${d.current_price.toFixed(2)}</td>
+                    <td class="p-3 text-center"><button class="text-slate-400 hover:text-slate-600 text-xs"><i class="fa-solid fa-pen"></i></button></td>
+                </tr>
+            `).join('');
+        }
+
+        function saveDrug() {
+            const name = document.getElementById('form-drug-name').value;
+            const form = document.getElementById('form-drug-form').value;
+            const unit = document.getElementById('form-drug-unit').value;
+            const price = parseFloat(document.getElementById('form-drug-price').value) || 0;
+
+            if (!name || !unit) { alert('กรุณากรอกข้อมูลยาให้ครบถ้วน'); return; }
+
+            const id = 'D-' + String(state.drugs.length + 1).padStart(3, '0');
+            state.drugs.push({ drug_id: id, drug_name: name, dosage_form: form, dispensing_unit: unit, current_price: price });
+
+            closeModal('modal-add-drug');
+            showToast(`ขึ้นทะเบียนยาใหม่สำเร็จ รหัส: ${id}`);
+            renderDrugs();
+        }
+
+        // ==========================================
+        // OWNERSHIP MANAGEMENT MODULE
+        // ==========================================
+        function renderOwnershipTab() {
+            const petListEl = document.getElementById('ownership-pet-list');
+            petListEl.innerHTML = state.pets.map(p => `
+                <button onclick="selectPetOwnership('${p.pet_id}')" class="w-full text-left p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition ${p.pet_id === state.selectedOwnershipPetId ? 'bg-emerald-50 border-emerald-400' : ''}">
+                    <div class="font-bold text-slate-800 text-sm">${p.pet_name} <span class="text-xs text-slate-400">(${p.pet_id})</span></div>
+                    <div class="text-xs text-slate-500">${p.species} | ${p.breed}</div>
+                </button>
+            `).join('');
+
+            renderOwnershipDetail();
+        }
+
+        function selectPetOwnership(petId) {
+            state.selectedOwnershipPetId = petId;
+            switchTab('ownership');
+        }
+
+        function renderOwnershipDetail() {
+            const pet = getPet(state.selectedOwnershipPetId);
+            if (!pet.pet_id) return;
+
+            document.getElementById('own-pet-name').innerText = `${pet.pet_name} (#${pet.pet_id})`;
+            document.getElementById('own-pet-info').innerText = `${pet.species} | พันธุ์: ${pet.breed} | เพศ: ${pet.sex}`;
+
+            const history = state.pet_owners.filter(po => po.pet_id === pet.pet_id);
+            const tbody = document.getElementById('ownership-history-body');
+
+            tbody.innerHTML = history.map(h => {
+                const owner = getOwner(h.owner_id);
+                const isCurrent = !h.end_date;
+                return `
+                <tr class="hover:bg-slate-50 text-xs">
+                    <td class="p-3">
+                        <p class="font-bold text-slate-800">${owner.owner_name} <span class="text-slate-400">(${owner.owner_id})</span></p>
+                        <p class="text-[10px] text-slate-500">${owner.contact}</p>
+                    </td>
+                    <td class="p-3">
+                        ${isCurrent ? `<span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-bold rounded">เจ้าของปัจจุบัน</span>` : `<span class="px-2 py-0.5 bg-slate-100 text-slate-500 rounded">ยกเลิกสิทธิ์แล้ว</span>`}
+                        ${h.is_primary_contact ? `<span class="ml-1 px-2 py-0.5 bg-blue-100 text-blue-800 font-bold rounded">ผู้ติดต่อหลัก</span>` : ''}
+                    </td>
+                    <td class="p-3 font-mono text-slate-600">${h.start_date} ~ ${h.end_date || 'ปัจจุบัน'}</td>
+                    <td class="p-3 text-center">
+                        ${isCurrent && !h.is_primary_contact ? `<button onclick="setPrimaryOwner('${pet.pet_id}', '${h.owner_id}')" class="text-blue-600 hover:underline">ตั้งเป็นผู้ติดต่อหลัก</button>` : '-'}
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function saveCoOwner() {
+            const owner_id = document.getElementById('form-coowner-select').value;
+            const isPrimary = document.getElementById('form-coowner-isprimary').checked;
+            const pet_id = state.selectedOwnershipPetId;
+
+            const today = new Date().toISOString().substring(0, 10);
+
+            if (isPrimary) {
+                // unset previous primary
+                state.pet_owners.forEach(po => { if (po.pet_id === pet_id) po.is_primary_contact = false; });
+            }
+
+            state.pet_owners.push({ pet_id, owner_id, start_date: today, end_date: null, is_primary_contact: isPrimary });
+            closeModal('modal-add-co-owner');
+            showToast('เพิ่มเจ้าของร่วมเรียบร้อย');
+            renderOwnershipDetail();
+        }
+
+        function saveTransferOwner() {
+            const new_owner_id = document.getElementById('form-transfer-newowner').value;
+            const pet_id = state.selectedOwnershipPetId;
+            const today = new Date().toISOString().substring(0, 10);
+
+            // End current ownerships
+            state.pet_owners.forEach(po => {
+                if (po.pet_id === pet_id && !po.end_date) {
+                    po.end_date = today;
+                    po.is_primary_contact = false;
+                }
+            });
+
+            // Add new primary owner
+            state.pet_owners.push({ pet_id, owner_id: new_owner_id, start_date: today, end_date: null, is_primary_contact: true });
+
+            closeModal('modal-transfer-owner');
+            showToast('โอนกรรมสิทธิ์สัตว์เลี้ยงเรียบร้อยแล้ว');
+            renderOwnershipDetail();
+        }
+
+        function setPrimaryOwner(petId, ownerId) {
+            state.pet_owners.forEach(po => {
+                if (po.pet_id === petId && !po.end_date) {
+                    po.is_primary_contact = (po.owner_id === ownerId);
+                }
+            });
+            renderOwnershipDetail();
+            showToast('ปรับเปลี่ยนผู้ติดต่อหลักเรียบร้อย');
+        }
+
+        // ==========================================
+        // DASHBOARD & REPORTS MODULE
+        // ==========================================
+        function renderReports() {
+            document.getElementById('stat-appt-count').innerText = state.appointments.length;
+            document.getElementById('stat-visit-count').innerText = state.visits.length;
+            document.getElementById('stat-pet-count').innerText = state.pets.length;
+
+            const totalRev = state.payments.reduce((sum, p) => sum + p.amount, 0);
+            document.getElementById('stat-revenue').innerText = `฿${totalRev.toFixed(2)}`;
+
+            // Procedures summary
+            const procSummary = document.getElementById('report-procedures-summary');
+            procSummary.innerHTML = state.procedure_types.map(pt => {
+                const count = state.procedures.filter(p => p.procedure_type_id === pt.procedure_type_id).length;
+                return `
+                <div class="flex justify-between items-center text-xs p-2.5 bg-slate-50 rounded-lg">
+                    <span class="font-medium text-slate-800">${pt.procedure_name}</span>
+                    <span class="font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">${count} ครั้ง</span>
+                </div>`;
+            }).join('');
+
+            // Vets summary
+            const vetSummary = document.getElementById('report-vets-summary');
+            vetSummary.innerHTML = state.vets.map(v => {
+                const cases = state.visit_vets.filter(vv => vv.vet_id === v.vet_id).length;
+                return `
+                <div class="flex justify-between items-center text-xs p-2.5 bg-slate-50 rounded-lg">
+                    <span class="font-medium text-slate-800">${v.vet_name}</span>
+                    <span class="font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">${cases} เคส</span>
+                </div>`;
+            }).join('');
+        }
+
+        // ==========================================
+        // INITIALIZATION ON LOAD
+        // ==========================================
+        window.onload = function() {
+            switchTab('appointments');
+        };
+    </script>
+</body>
+</html>
